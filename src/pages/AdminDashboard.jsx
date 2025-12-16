@@ -31,6 +31,9 @@ export default function AdminDashboard() {
   const [loadingSavings, setLoadingSavings] = useState(false);
   const [loadingLogout, setLoadingLogout] = useState(false);
 
+  // Confirmation modal
+  const [confirmModal, setConfirmModal] = useState(false);
+
   useEffect(() => {
     fetchMembers();
     fetchRecords();
@@ -105,19 +108,23 @@ export default function AdminDashboard() {
     }
   };
 
-  // Record Savings
-  const handleAddSavings = async (e) => {
+  // Add Savings with confirmation
+  const handleAddSavings = (e) => {
     e.preventDefault();
+    setError("");
+    setMessage("");
     if (!memberId || !amount || !confirmAmount || !date) return;
     if (Number(amount) !== Number(confirmAmount)) {
       setError("Amounts do not match");
       return;
     }
+    // Show confirmation modal
+    setConfirmModal(true);
+  };
 
+  const confirmAddSavings = async () => {
     setLoadingSavings(true);
-    setError("");
-    setMessage("");
-
+    setConfirmModal(false);
     try {
       await api.post("/savings", {
         member: memberId,
@@ -308,6 +315,38 @@ export default function AdminDashboard() {
           </form>
         </div>
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-80 text-center">
+            <h2 className="text-xl font-semibold mb-4">Confirm Savings</h2>
+            <p className="mb-2">
+              <strong>Member:</strong> {members.find((m) => m._id === memberId)?.name}
+            </p>
+            <p className="mb-2">
+              <strong>Amount:</strong> Ksh {amount}
+            </p>
+            <p className="mb-4">
+              <strong>Date:</strong> {date}
+            </p>
+            <div className="flex justify-around mt-4">
+              <button
+                onClick={confirmAddSavings}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Confirm
+              </button>
+              <button
+                onClick={() => setConfirmModal(false)}
+                className="bg-white text-black hover:bg-gray-300 px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
