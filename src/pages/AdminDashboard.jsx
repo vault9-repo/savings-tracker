@@ -34,6 +34,9 @@ export default function AdminDashboard() {
   // Confirmation modal
   const [confirmModal, setConfirmModal] = useState(false);
 
+  // Success tick overlay
+  const [successTick, setSuccessTick] = useState(false);
+
   useEffect(() => {
     fetchMembers();
     fetchRecords();
@@ -97,9 +100,7 @@ export default function AdminDashboard() {
     try {
       await api.post("/auth/register", { name, email, password, role: "member" });
       setMessage("Member added successfully!");
-      setName("");
-      setEmail("");
-      setPassword("");
+      setName(""); setEmail(""); setPassword("");
       fetchMembers();
     } catch (err) {
       setError(err.response?.data?.message || "Error adding member");
@@ -118,7 +119,6 @@ export default function AdminDashboard() {
       setError("Amounts do not match");
       return;
     }
-    // Show confirmation modal
     setConfirmModal(true);
   };
 
@@ -126,17 +126,14 @@ export default function AdminDashboard() {
     setLoadingSavings(true);
     setConfirmModal(false);
     try {
-      await api.post("/savings", {
-        member: memberId,
-        amount: Number(amount),
-        date,
-      });
-      setAmount("");
-      setConfirmAmount("");
-      setDate("");
-      setMemberId("");
+      await api.post("/savings", { member: memberId, amount: Number(amount), date });
+      setAmount(""); setConfirmAmount(""); setDate(""); setMemberId("");
       setMessage("Savings recorded successfully!");
       fetchRecords();
+
+      // Show success tick overlay
+      setSuccessTick(true);
+      setTimeout(() => setSuccessTick(false), 1500); // 1.5s display
     } catch (err) {
       setError(err.response?.data?.message || "Error recording savings");
     } finally {
@@ -145,7 +142,7 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-bg text-white p-6">
+    <div className="min-h-screen flex flex-col items-center bg-bg text-white p-6 relative">
       <div className="w-full max-w-5xl">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -166,21 +163,13 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-gray-900 p-4 rounded-lg shadow-lg">
           <div className="flex flex-col">
             <label className="mb-1 text-sm">Start Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="p-2 rounded bg-gray-800 text-white"
-            />
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+              className="p-2 rounded bg-gray-800 text-white" />
           </div>
           <div className="flex flex-col">
             <label className="mb-1 text-sm">End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="p-2 rounded bg-gray-800 text-white"
-            />
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+              className="p-2 rounded bg-gray-800 text-white" />
           </div>
           <div className="flex flex-col justify-center text-center">
             <label className="mb-1 text-sm">Total in Range (Ksh)</label>
@@ -208,33 +197,10 @@ export default function AdminDashboard() {
         <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-xl font-semibold mb-4">Add Member</h2>
           <form className="flex flex-col gap-3" onSubmit={handleAddMember}>
-            <input
-              className="p-2 rounded bg-white text-black placeholder-gray-500"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 rounded bg-white text-black placeholder-gray-500"
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 rounded bg-white text-black placeholder-gray-500"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              disabled={loadingAddMember}
-              className="bg-white text-black hover:bg-green-500 hover:text-white p-2 rounded transition flex justify-center gap-2"
-            >
+            <input className="p-2 rounded bg-white text-black placeholder-gray-500" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input className="p-2 rounded bg-white text-black placeholder-gray-500" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input className="p-2 rounded bg-white text-black placeholder-gray-500" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <button disabled={loadingAddMember} className="bg-gradient-to-r from-[#5C3A21] to-black text-white p-2 rounded transition flex justify-center gap-2 hover:from-[#7a4e2d] hover:to-gray-900">
               {loadingAddMember ? <Spinner /> : "Add Member"}
             </button>
           </form>
@@ -270,46 +236,14 @@ export default function AdminDashboard() {
         <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-xl font-semibold mb-4">Record Daily Savings</h2>
           <form className="flex flex-col gap-3" onSubmit={handleAddSavings}>
-            <select
-              className="p-2 rounded bg-white text-black"
-              value={memberId}
-              onChange={(e) => setMemberId(e.target.value)}
-              required
-            >
+            <select className="p-2 rounded bg-white text-black" value={memberId} onChange={(e) => setMemberId(e.target.value)} required>
               <option value="">Select Member</option>
-              {members.map((m) => (
-                <option key={m._id} value={m._id}>
-                  {m.name}
-                </option>
-              ))}
+              {members.map((m) => <option key={m._id} value={m._id}>{m.name}</option>)}
             </select>
-            <input
-              className="p-2 rounded bg-white text-black placeholder-gray-500"
-              type="number"
-              placeholder="Amount Saved"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 rounded bg-white text-black placeholder-gray-500"
-              type="number"
-              placeholder="Confirm Amount"
-              value={confirmAmount}
-              onChange={(e) => setConfirmAmount(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 rounded bg-white text-black"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-            <button
-              disabled={loadingSavings}
-              className="bg-white text-black hover:bg-green-500 hover:text-white p-2 rounded transition flex justify-center gap-2"
-            >
+            <input className="p-2 rounded bg-white text-black placeholder-gray-500" type="number" placeholder="Amount Saved" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <input className="p-2 rounded bg-white text-black placeholder-gray-500" type="number" placeholder="Confirm Amount" value={confirmAmount} onChange={(e) => setConfirmAmount(e.target.value)} required />
+            <input className="p-2 rounded bg-white text-black" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            <button disabled={loadingSavings} className="bg-gradient-to-r from-[#5C3A21] to-black text-white p-2 rounded transition flex justify-center gap-2 hover:from-[#7a4e2d] hover:to-gray-900">
               {loadingSavings ? <Spinner /> : "Add Savings"}
             </button>
           </form>
@@ -321,29 +255,24 @@ export default function AdminDashboard() {
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
           <div className="bg-gray-900 p-6 rounded-lg shadow-lg w-80 text-center">
             <h2 className="text-xl font-semibold mb-4">Confirm Savings</h2>
-            <p className="mb-2">
-              <strong>Member:</strong> {members.find((m) => m._id === memberId)?.name}
-            </p>
-            <p className="mb-2">
-              <strong>Amount:</strong> Ksh {amount}
-            </p>
-            <p className="mb-4">
-              <strong>Date:</strong> {date}
-            </p>
+            <p className="mb-2"><strong>Member:</strong> {members.find((m) => m._id === memberId)?.name}</p>
+            <p className="mb-2"><strong>Amount:</strong> Ksh {amount}</p>
+            <p className="mb-4"><strong>Date:</strong> {date}</p>
             <div className="flex justify-around mt-4">
-              <button
-                onClick={confirmAddSavings}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-              >
-                Confirm
-              </button>
-              <button
-                onClick={() => setConfirmModal(false)}
-                className="bg-white text-black hover:bg-gray-300 px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
+              <button onClick={confirmAddSavings} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Confirm</button>
+              <button onClick={() => setConfirmModal(false)} className="bg-white text-black hover:bg-gray-300 px-4 py-2 rounded">Cancel</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Tick Overlay */}
+      {successTick && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 pointer-events-none">
+          <div className="bg-green-500 p-6 rounded-full flex items-center justify-center animate-ping">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
           </div>
         </div>
       )}
