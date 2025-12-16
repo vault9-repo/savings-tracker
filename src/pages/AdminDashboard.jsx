@@ -103,111 +103,189 @@ export default function AdminDashboard() {
   const grandTotalSavings = records.reduce((sum, r) => sum + r.amount, 0);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg text-white p-6">
-      <div className="w-full max-w-5xl">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-center">Prayer Centre 2026 Savings</h1>
-          <button
-            onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold transition"
-          >
-            Logout
+  <div className="min-h-screen bg-bg text-white p-4 sm:p-6">
+    <div className="w-full max-w-6xl mx-auto">
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">
+          Prayer Centre 2026 Savings
+        </h1>
+
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold transition w-full sm:w-auto"
+        >
+          Logout
+        </button>
+      </div>
+
+      {message && (
+        <p className="text-center text-green-400 mb-4">{message}</p>
+      )}
+
+      {/* Date Range Selector */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-gray-900 p-4 rounded-lg shadow-lg">
+        <div className="flex flex-col">
+          <label className="mb-1 text-sm">Start Date</label>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="p-2 rounded bg-gray-800 text-white"
+          />
+        </div>
+
+        <div className="flex flex-col">
+          <label className="mb-1 text-sm">End Date</label>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="p-2 rounded bg-gray-800 text-white"
+          />
+        </div>
+
+        <div className="flex flex-col justify-center text-center">
+          <label className="mb-1 text-sm">Total in Range (Ksh)</label>
+          <p className="text-2xl text-green-400 font-bold">
+            {rangeTotal}
+          </p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center">
+          <h2 className="text-lg font-semibold">Total Members</h2>
+          <p className="text-2xl">{members.length}</p>
+        </div>
+
+        <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center">
+          <h2 className="text-lg font-semibold">Total Records</h2>
+          <p className="text-2xl">{records.length}</p>
+        </div>
+
+        <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center">
+          <h2 className="text-lg font-semibold">
+            Grand Total Savings (Ksh)
+          </h2>
+          <p className="text-2xl text-green-400">
+            {grandTotalSavings}
+          </p>
+        </div>
+      </div>
+
+      {/* Add Member */}
+      <div className="bg-gray-900 p-5 sm:p-6 rounded-lg shadow-lg mb-6">
+        <h2 className="text-xl font-semibold mb-4">Add Member</h2>
+
+        <form className="flex flex-col gap-3" onSubmit={handleAddMember}>
+          <input
+            className="p-2 rounded bg-gray-800 text-white"
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+          <input
+            className="p-2 rounded bg-gray-800 text-white"
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            className="p-2 rounded bg-gray-800 text-white"
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button className="bg-primary p-2 rounded hover:bg-indigo-600 transition">
+            Add Member
           </button>
-        </div>
+        </form>
+      </div>
 
-        {message && <p className="text-center text-green-400 mb-4">{message}</p>}
+      {/* Members List */}
+      <div className="bg-gray-900 p-5 sm:p-6 rounded-lg shadow-lg mb-6">
+        <h2 className="text-xl font-semibold mb-4">Members List</h2>
 
-        {/* Date Range Selector */}
-        <div className="flex flex-wrap justify-around mb-6 gap-2 bg-gray-900 p-4 rounded-lg shadow-lg">
-          <div className="flex flex-col w-1/3">
-            <label className="mb-1">Start Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="p-2 rounded bg-gray-800 text-white"
-            />
-          </div>
-          <div className="flex flex-col w-1/3">
-            <label className="mb-1">End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="p-2 rounded bg-gray-800 text-white"
-            />
-          </div>
-          <div className="flex flex-col w-1/3 text-center justify-center">
-            <label className="mb-1">Total in Range (Ksh)</label>
-            <p className="text-2xl text-green-400">{rangeTotal}</p>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="flex justify-around mb-6">
-          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center w-1/3 mr-2">
-            <h2 className="text-xl font-semibold">Total Members</h2>
-            <p className="text-2xl">{members.length}</p>
-          </div>
-          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center w-1/3 mx-2">
-            <h2 className="text-xl font-semibold">Total Records</h2>
-            <p className="text-2xl">{records.length}</p>
-          </div>
-          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center w-1/3 ml-2">
-            <h2 className="text-xl font-semibold">Grand Total Savings (Ksh)</h2>
-            <p className="text-2xl text-green-400">{grandTotalSavings}</p>
-          </div>
-        </div>
-
-        {/* Add Member */}
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-semibold mb-4">Add Member</h2>
-          <form className="flex flex-col gap-3" onSubmit={handleAddMember}>
-            <input className="p-2 rounded bg-gray-800 text-white" placeholder="Name" value={name} onChange={e => setName(e.target.value)} required />
-            <input className="p-2 rounded bg-gray-800 text-white" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
-            <input className="p-2 rounded bg-gray-800 text-white" type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} required />
-            <button className="bg-primary text-white p-2 rounded hover:bg-indigo-600 transition">Add Member</button>
-          </form>
-        </div>
-
-        {/* Members List */}
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
-          <h2 className="text-xl font-semibold mb-4">Members List</h2>
-          <table className="min-w-full bg-gray-800 text-white rounded-lg overflow-hidden">
+        {/* Mobile scroll */}
+        <div className="overflow-x-auto">
+          <table className="min-w-full bg-gray-800 text-white rounded-lg">
             <thead>
-              <tr className="bg-gray-700">
+              <tr className="bg-gray-700 text-left">
                 <th className="py-2 px-4">Name</th>
                 <th className="py-2 px-4">Email</th>
-                <th className="py-2 px-4">Total Savings (Ksh)</th>
+                <th className="py-2 px-4">Total (Ksh)</th>
               </tr>
             </thead>
             <tbody>
               {membersWithTotals.map((m) => (
-                <tr key={m._id} className="border-b border-gray-700 hover:bg-gray-700">
+                <tr
+                  key={m._id}
+                  className="border-b border-gray-700 hover:bg-gray-700"
+                >
                   <td className="py-2 px-4">{m.name}</td>
                   <td className="py-2 px-4">{m.email}</td>
-                  <td className="py-2 px-4 text-green-400">{m.total}</td>
+                  <td className="py-2 px-4 text-green-400">
+                    {m.total}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+      </div>
 
-        {/* Record Savings */}
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
-          <h2 className="text-xl font-semibold mb-4">Record Daily Savings</h2>
-          <form className="flex flex-col gap-3" onSubmit={handleAddSavings}>
-            <select className="p-2 rounded bg-gray-800 text-white" value={memberId} onChange={e => setMemberId(e.target.value)} required>
-              <option value="">Select Member</option>
-              {members.map(m => <option key={m._id} value={m._id}>{m.name} ({m.email})</option>)}
-            </select>
-            <input className="p-2 rounded bg-gray-800 text-white" type="number" placeholder="Amount Saved" value={amount} onChange={e => setAmount(e.target.value)} required />
-            <input className="p-2 rounded bg-gray-800 text-white" type="date" value={date} onChange={e => setDate(e.target.value)} required />
-            <button className="bg-accent text-white p-2 rounded hover:bg-green-600 transition">Add Savings</button>
-          </form>
-        </div>
+      {/* Record Savings */}
+      <div className="bg-gray-900 p-5 sm:p-6 rounded-lg shadow-lg">
+        <h2 className="text-xl font-semibold mb-4">
+          Record Daily Savings
+        </h2>
+
+        <form className="flex flex-col gap-3" onSubmit={handleAddSavings}>
+          <select
+            className="p-2 rounded bg-gray-800 text-white"
+            value={memberId}
+            onChange={(e) => setMemberId(e.target.value)}
+            required
+          >
+            <option value="">Select Member</option>
+            {members.map((m) => (
+              <option key={m._id} value={m._id}>
+                {m.name} ({m.email})
+              </option>
+            ))}
+          </select>
+
+          <input
+            className="p-2 rounded bg-gray-800 text-white"
+            type="number"
+            placeholder="Amount Saved"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+
+          <input
+            className="p-2 rounded bg-gray-800 text-white"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+
+          <button className="bg-accent p-2 rounded hover:bg-green-600 transition">
+            Add Savings
+          </button>
+        </form>
       </div>
     </div>
-  );
+  </div>
+);
 }
