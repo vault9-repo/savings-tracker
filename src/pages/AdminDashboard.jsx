@@ -123,23 +123,31 @@ export default function AdminDashboard() {
   };
 
   const confirmAddSavings = async () => {
-    setLoadingSavings(true);
-    setConfirmModal(false);
-    try {
-      await api.post("/savings", { member: memberId, amount: Number(amount), date });
-      setAmount(""); setConfirmAmount(""); setDate(""); setMemberId("");
-      setMessage("Savings recorded successfully!");
-      fetchRecords();
+  setLoadingSavings(true);
+  setConfirmModal(false);
+  try {
+    await api.post("/savings", {
+      member: memberId,
+      amount: Number(amount),
+      date,
+    });
+    setAmount("");
+    setConfirmAmount("");
+    setDate("");
+    setMemberId("");
+    setMessage("Savings recorded successfully!");
+    fetchRecords();
 
-      // Show success tick overlay
-      setSuccessTick(true);
-      setTimeout(() => setSuccessTick(false), 1500); // 1.5s display
-    } catch (err) {
-      setError(err.response?.data?.message || "Error recording savings");
-    } finally {
-      setLoadingSavings(false);
-    }
-  };
+    // Show success tick overlay for 5 seconds
+    setSuccessTick(true);
+    setTimeout(() => setSuccessTick(false), 5000); // <- updated
+  } catch (err) {
+    setError(err.response?.data?.message || "Error recording savings");
+  } finally {
+    setLoadingSavings(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-bg text-white p-6 relative">
