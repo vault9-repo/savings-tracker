@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useSavings } from "../context/SavingsContext";
 import { useAuth } from "../context/AuthContext";
 
@@ -5,10 +6,15 @@ export default function MemberDashboard() {
   const { records } = useSavings();
   const { user } = useAuth();
 
+  const [loadingLogout, setLoadingLogout] = useState(false);
+
   // Logout handler
   const handleLogout = () => {
+    setLoadingLogout(true);
     localStorage.removeItem("user");
-    window.location.href = "https://savings-tracker-zqly.onrender.com"; // Redirect to the landing page
+    setTimeout(() => {
+      window.location.href = "https://savings-tracker-zqly.onrender.com";
+    }, 500); // slight delay to show spinner
   };
 
   if (!user) {
@@ -38,8 +44,12 @@ export default function MemberDashboard() {
     0
   );
 
-  // Utility to format without decimal .00
+  // Utility to format without decimal
   const formatAmount = (amt) => Math.floor(amt);
+
+  const Spinner = () => (
+    <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4" />
+  );
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-black p-6 pt-8">
@@ -52,9 +62,10 @@ export default function MemberDashboard() {
           </div>
           <button
             onClick={handleLogout}
-            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold transition"
+            disabled={loadingLogout}
+            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-semibold transition flex items-center gap-2"
           >
-            Logout
+            {loadingLogout ? <Spinner /> : "Logout"}
           </button>
         </div>
 
