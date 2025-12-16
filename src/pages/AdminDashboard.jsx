@@ -121,11 +121,11 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg text-white p-6">
+    <div className="min-h-screen flex flex-col items-center bg-bg text-white p-6">
       <div className="w-full max-w-5xl">
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-center">Prayer Centre 2026 Savings</h1>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+          <h1 className="text-3xl font-bold text-center sm:text-left">Prayer Centre 2026 Savings</h1>
           <button
             onClick={handleLogout}
             disabled={loadingLogout}
@@ -139,34 +139,34 @@ export default function AdminDashboard() {
         {error && <p className="text-center text-red-400 mb-4">{error}</p>}
 
         {/* Stats */}
-        <div className="flex justify-around mb-6">
-          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center w-1/3 mr-2">
+        <div className="flex flex-col sm:flex-row justify-around mb-6 gap-4">
+          <div className="bg-amber-900 p-4 rounded-lg shadow-lg text-center flex-1">
             <h2 className="text-xl font-semibold">Total Members</h2>
             <p className="text-2xl">{members.length}</p>
           </div>
-          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center w-1/3 mx-2">
+          <div className="bg-amber-900 p-4 rounded-lg shadow-lg text-center flex-1">
             <h2 className="text-xl font-semibold">Total Records</h2>
             <p className="text-2xl">{records.length}</p>
           </div>
-          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center w-1/3 ml-2">
+          <div className="bg-amber-900 p-4 rounded-lg shadow-lg text-center flex-1">
             <h2 className="text-xl font-semibold">Grand Total Savings (Ksh)</h2>
             <p className="text-2xl text-green-400">{grandTotalSavings}</p>
           </div>
         </div>
 
         {/* Add Member */}
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
+        <div className="bg-amber-900 p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-xl font-semibold mb-4">Add Member</h2>
           <form className="flex flex-col gap-3" onSubmit={handleAddMember}>
             <input
-              className="p-2 rounded bg-gray-800 text-white"
+              className="p-2 rounded bg-gray-600 text-white"
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
             <input
-              className="p-2 rounded bg-gray-800 text-white"
+              className="p-2 rounded bg-gray-600 text-white"
               type="email"
               placeholder="Email"
               value={email}
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
               required
             />
             <input
-              className="p-2 rounded bg-gray-800 text-white"
+              className="p-2 rounded bg-gray-600 text-white"
               type="password"
               placeholder="Password"
               value={password}
@@ -182,8 +182,8 @@ export default function AdminDashboard() {
               required
             />
             <button
-              className="bg-primary text-white p-2 rounded hover:bg-indigo-600 transition flex justify-center gap-2"
               disabled={loadingAddMember}
+              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded transition flex justify-center gap-2"
             >
               {loadingAddMember ? <Spinner /> : "Add Member"}
             </button>
@@ -191,13 +191,12 @@ export default function AdminDashboard() {
         </div>
 
         {/* Members List */}
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
+        <div className="bg-amber-900 p-6 rounded-lg shadow-lg mb-6 overflow-x-auto">
           <h2 className="text-xl font-semibold mb-4">Members List</h2>
           <table className="min-w-full bg-gray-800 text-white rounded-lg overflow-hidden">
             <thead>
               <tr className="bg-gray-700">
                 <th className="py-2 px-4">Name</th>
-                <th className="py-2 px-4">Email</th>
                 <th className="py-2 px-4">Total Savings (Ksh)</th>
               </tr>
             </thead>
@@ -210,7 +209,6 @@ export default function AdminDashboard() {
                     </div>
                     {m.name}
                   </td>
-                  <td className="py-2 px-4">{m.email}</td>
                   <td className="py-2 px-4 text-green-400">{m.total}</td>
                 </tr>
               ))}
@@ -219,11 +217,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Record Savings */}
-        <div className="bg-gray-900 p-6 rounded-lg shadow-lg">
+        <div className="bg-amber-900 p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-xl font-semibold mb-4">Record Daily Savings</h2>
           <form className="flex flex-col gap-3" onSubmit={handleAddSavings}>
             <select
-              className="p-2 rounded bg-gray-800 text-white"
+              className="p-2 rounded bg-gray-600 text-white"
               value={memberId}
               onChange={(e) => setMemberId(e.target.value)}
               required
@@ -231,12 +229,12 @@ export default function AdminDashboard() {
               <option value="">Select Member</option>
               {members.map((m) => (
                 <option key={m._id} value={m._id}>
-                  {m.name} ({m.email})
+                  {m.name}
                 </option>
               ))}
             </select>
             <input
-              className="p-2 rounded bg-gray-800 text-white"
+              className="p-2 rounded bg-gray-600 text-white"
               type="number"
               placeholder="Amount Saved"
               value={amount}
@@ -244,7 +242,7 @@ export default function AdminDashboard() {
               required
             />
             <input
-              className="p-2 rounded bg-gray-800 text-white"
+              className="p-2 rounded bg-gray-600 text-white"
               type="number"
               placeholder="Confirm Amount"
               value={confirmAmount}
@@ -252,15 +250,15 @@ export default function AdminDashboard() {
               required
             />
             <input
-              className="p-2 rounded bg-gray-800 text-white"
+              className="p-2 rounded bg-gray-600 text-white"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
               required
             />
             <button
-              className="bg-accent text-white p-2 rounded hover:bg-green-600 transition flex justify-center gap-2"
               disabled={loadingSavings}
+              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded transition flex justify-center gap-2"
             >
               {loadingSavings ? <Spinner /> : "Add Savings"}
             </button>
