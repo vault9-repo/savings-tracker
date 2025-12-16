@@ -33,9 +33,10 @@ export default function AdminDashboard() {
     calculateRangeTotal();
   }, [records, startDate, endDate]);
 
+  // Logout handler: redirect to landing page
   const handleLogout = () => {
     localStorage.removeItem("user");
-    window.location.reload();
+    window.location.href = "https://savings-tracker-zqly.onrender.com";
   };
 
   const handleAddMember = async (e) => {
