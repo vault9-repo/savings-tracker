@@ -8,7 +8,7 @@ export default function MemberDashboard() {
   // Logout handler
   const handleLogout = () => {
     localStorage.removeItem("user");
-    window.location.reload(); // Refresh page to show login form
+    window.location.href = "https://savings-tracker-zqly.onrender.com"; // Redirect to the landing page
   };
 
   if (!user) {
