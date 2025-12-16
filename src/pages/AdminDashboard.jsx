@@ -7,32 +7,40 @@ export default function AdminDashboard() {
   const { members, records, fetchMembers, fetchRecords } = useSavings();
   const navigate = useNavigate();
 
-  /* ===================== STATE ===================== */
+  /* ================= STATE ================= */
 
+  // Add Member
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // Savings
   const [memberId, setMemberId] = useState("");
   const [amount, setAmount] = useState("");
   const [confirmAmount, setConfirmAmount] = useState("");
   const [date, setDate] = useState("");
 
+  // Date range
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  // UI
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Loading
   const [loadingAddMember, setLoadingAddMember] = useState(false);
   const [loadingSavings, setLoadingSavings] = useState(false);
   const [loadingLogout, setLoadingLogout] = useState(false);
 
-  /* ===================== EFFECTS ===================== */
+  /* ================= EFFECTS ================= */
 
   useEffect(() => {
     fetchMembers();
     fetchRecords();
   }, []);
 
-  /* ===================== HELPERS ===================== */
+  /* ================= HELPERS ================= */
 
   const Spinner = () => (
     <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4" />
@@ -45,12 +53,11 @@ export default function AdminDashboard() {
       : parts[0]?.[0]?.toUpperCase() || "";
   };
 
-  /* ===================== TOTALS ===================== */
+  /* ================= TOTALS ================= */
 
-  const grandTotalSavings = useMemo(
-    () => records.reduce((sum, r) => sum + Number(r.amount || 0), 0),
-    [records]
-  );
+  const grandTotalSavings = useMemo(() => {
+    return records.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  }, [records]);
 
   const membersWithTotals = useMemo(() => {
     return members.map((m) => {
@@ -61,7 +68,14 @@ export default function AdminDashboard() {
     });
   }, [members, records]);
 
-  /* ===================== HANDLERS ===================== */
+  const rangeTotal = useMemo(() => {
+    if (!startDate || !endDate) return 0;
+    return records
+      .filter((r) => r.date >= startDate && r.date <= endDate)
+      .reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  }, [records, startDate, endDate]);
+
+  /* ================= HANDLERS ================= */
 
   const handleLogout = () => {
     setLoadingLogout(true);
@@ -70,8 +84,7 @@ export default function AdminDashboard() {
     setLoadingLogout(false);
   };
 
-  /* ===================== FIXED ADD MEMBER ===================== */
-
+  // ✅ ADD MEMBER (FIXED, NOTHING REMOVED)
   const handleAddMember = async (e) => {
     e.preventDefault();
     setLoadingAddMember(true);
@@ -79,27 +92,12 @@ export default function AdminDashboard() {
     setMessage("");
 
     try {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setError("Not authenticated. Please login again.");
-        return;
-      }
-
-      await api.post(
-        "/users", // ✅ change to /users/register IF your backend uses that
-        {
-          name: name.trim(),
-          email: email.trim(),
-          password,
-          role: "member", // ✅ IMPORTANT
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await api.post("/users", {
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        role: "member",
+      });
 
       await fetchMembers();
 
@@ -109,16 +107,14 @@ export default function AdminDashboard() {
       setMessage("Member added successfully ✅");
     } catch (err) {
       setError(
-        err.response?.data?.message ||
-          "Failed to add member. Check server."
+        err.response?.data?.message || "Failed to add member"
       );
     } finally {
       setLoadingAddMember(false);
     }
   };
 
-  /* ===================== ADD SAVINGS ===================== */
-
+  // ADD SAVINGS
   const handleAddSavings = async (e) => {
     e.preventDefault();
 
@@ -152,14 +148,14 @@ export default function AdminDashboard() {
     }
   };
 
-  /* ===================== JSX ===================== */
+  /* ================= JSX ================= */
 
   return (
     <div className="min-h-screen bg-bg text-white p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold">
             Prayer Centre 2026 Savings
           </h1>
@@ -167,7 +163,7 @@ export default function AdminDashboard() {
           <button
             onClick={handleLogout}
             disabled={loadingLogout}
-            className="bg-red-600 px-4 py-2 rounded flex gap-2"
+            className="bg-red-600 px-4 py-2 rounded flex items-center gap-2"
           >
             {loadingLogout ? <Spinner /> : "Logout"}
           </button>
@@ -176,52 +172,53 @@ export default function AdminDashboard() {
         {message && <p className="text-green-400 mb-4">{message}</p>}
         {error && <p className="text-red-400 mb-4">{error}</p>}
 
-        {/* ADD MEMBER */}
+        {/* Date Range */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-gray-900 p-4 rounded-lg">
+          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="p-2 bg-gray-800 rounded" />
+          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="p-2 bg-gray-800 rounded" />
+          <div className="text-center">
+            <p>Total in Range</p>
+            <p className="text-2xl text-green-400 font-bold">{rangeTotal}</p>
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <div className="bg-gray-900 p-4 rounded text-center">
+            <p>Total Members</p>
+            <p className="text-2xl">{members.length}</p>
+          </div>
+          <div className="bg-gray-900 p-4 rounded text-center">
+            <p>Total Records</p>
+            <p className="text-2xl">{records.length}</p>
+          </div>
+          <div className="bg-gray-900 p-4 rounded text-center">
+            <p>Grand Total</p>
+            <p className="text-2xl text-green-400">{grandTotalSavings}</p>
+          </div>
+        </div>
+
+        {/* Add Member */}
         <div className="bg-gray-900 p-6 rounded-lg mb-6">
           <h2 className="text-xl mb-4">Add Member</h2>
-
           <form onSubmit={handleAddMember} className="flex flex-col gap-3">
-            <input
-              className="p-2 bg-gray-800 rounded"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 bg-gray-800 rounded"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 bg-gray-800 rounded"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-
-            <button
-              disabled={loadingAddMember}
-              className="bg-primary p-2 rounded flex justify-center gap-2"
-            >
+            <input className="p-2 bg-gray-800 rounded" placeholder="Full Name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <button disabled={loadingAddMember} className="bg-primary p-2 rounded flex justify-center gap-2">
               {loadingAddMember ? <Spinner /> : "Add Member"}
             </button>
           </form>
         </div>
 
-        {/* MEMBERS LIST */}
-        <div className="bg-gray-900 p-6 rounded-lg">
+        {/* Members List */}
+        <div className="bg-gray-900 p-6 rounded-lg mb-6">
           <h2 className="text-xl mb-4">Members List</h2>
-
           <table className="w-full bg-gray-800 rounded">
             <thead>
               <tr className="bg-gray-700">
-                <th className="text-left py-2 px-4">Member</th>
-                <th className="text-left py-2 px-4">Total (Ksh)</th>
+                <th className="py-2 px-4 text-left">Member</th>
+                <th className="py-2 px-4 text-left">Total (Ksh)</th>
               </tr>
             </thead>
             <tbody>
@@ -240,6 +237,25 @@ export default function AdminDashboard() {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Record Savings */}
+        <div className="bg-gray-900 p-6 rounded-lg">
+          <h2 className="text-xl mb-4">Record Daily Savings</h2>
+          <form onSubmit={handleAddSavings} className="flex flex-col gap-3">
+            <select className="p-2 bg-gray-800 rounded" value={memberId} onChange={(e) => setMemberId(e.target.value)} required>
+              <option value="">Select Member</option>
+              {members.map((m) => (
+                <option key={m._id} value={m._id}>{m.name}</option>
+              ))}
+            </select>
+            <input className="p-2 bg-gray-800 rounded" type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" type="number" placeholder="Confirm Amount" value={confirmAmount} onChange={(e) => setConfirmAmount(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+            <button disabled={loadingSavings} className="bg-accent p-2 rounded flex justify-center gap-2">
+              {loadingSavings ? <Spinner /> : "Add Savings"}
+            </button>
+          </form>
         </div>
 
       </div>
