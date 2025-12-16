@@ -7,8 +7,6 @@ export default function AdminDashboard() {
   const { members, records, fetchMembers, fetchRecords } = useSavings();
   const navigate = useNavigate();
 
-  /* ================= STATE ================= */
-
   // Add Member
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -33,14 +31,10 @@ export default function AdminDashboard() {
   const [loadingSavings, setLoadingSavings] = useState(false);
   const [loadingLogout, setLoadingLogout] = useState(false);
 
-  /* ================= EFFECTS ================= */
-
   useEffect(() => {
     fetchMembers();
     fetchRecords();
   }, []);
-
-  /* ================= HELPERS ================= */
 
   const Spinner = () => (
     <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4" />
@@ -53,12 +47,7 @@ export default function AdminDashboard() {
       : parts[0]?.[0]?.toUpperCase() || "";
   };
 
-  /* ================= TOTALS ================= */
-
-  const grandTotalSavings = useMemo(() => {
-    return records.reduce((sum, r) => sum + Number(r.amount || 0), 0);
-  }, [records]);
-
+  // Calculate totals per member
   const membersWithTotals = useMemo(() => {
     return members.map((m) => {
       const total = records
@@ -68,14 +57,17 @@ export default function AdminDashboard() {
     });
   }, [members, records]);
 
+  const grandTotalSavings = useMemo(
+    () => membersWithTotals.reduce((sum, m) => sum + m.total, 0),
+    [membersWithTotals]
+  );
+
   const rangeTotal = useMemo(() => {
     if (!startDate || !endDate) return 0;
     return records
       .filter((r) => r.date >= startDate && r.date <= endDate)
       .reduce((sum, r) => sum + Number(r.amount || 0), 0);
   }, [records, startDate, endDate]);
-
-  /* ================= HANDLERS ================= */
 
   const handleLogout = () => {
     setLoadingLogout(true);
@@ -84,7 +76,7 @@ export default function AdminDashboard() {
     setLoadingLogout(false);
   };
 
-  // ✅ ADD MEMBER (FIXED, NOTHING REMOVED)
+  // ✅ Add Member Fix
   const handleAddMember = async (e) => {
     e.preventDefault();
     setLoadingAddMember(true);
@@ -92,32 +84,29 @@ export default function AdminDashboard() {
     setMessage("");
 
     try {
-      await api.post("/users", {
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        role: "member",
-      });
+      // Optional: include token if your backend requires auth
+      const token = localStorage.getItem("token");
+
+      await api.post(
+        "/users", // or "/users/register" depending on your backend
+        { name: name.trim(), email: email.trim(), password, role: "member" },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : {}
+      );
 
       await fetchMembers();
-
       setName("");
       setEmail("");
       setPassword("");
       setMessage("Member added successfully ✅");
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Failed to add member"
-      );
+      setError(err.response?.data?.message || "Failed to add member");
     } finally {
       setLoadingAddMember(false);
     }
   };
 
-  // ADD SAVINGS
   const handleAddSavings = async (e) => {
     e.preventDefault();
-
     if (amount !== confirmAmount) {
       alert("Amounts do not match");
       return;
@@ -128,14 +117,8 @@ export default function AdminDashboard() {
     setMessage("");
 
     try {
-      await api.post("/savings", {
-        member: memberId,
-        amount: Number(amount),
-        date,
-      });
-
+      await api.post("/savings", { member: memberId, amount: Number(amount), date });
       await fetchRecords();
-
       setMemberId("");
       setAmount("");
       setConfirmAmount("");
@@ -148,23 +131,13 @@ export default function AdminDashboard() {
     }
   };
 
-  /* ================= JSX ================= */
-
   return (
     <div className="min-h-screen bg-bg text-white p-4 sm:p-6">
       <div className="max-w-6xl mx-auto">
-
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold">
-            Prayer Centre 2026 Savings
-          </h1>
-
-          <button
-            onClick={handleLogout}
-            disabled={loadingLogout}
-            className="bg-red-600 px-4 py-2 rounded flex items-center gap-2"
-          >
+          <h1 className="text-2xl sm:text-3xl font-bold">Prayer Centre 2026 Savings</h1>
+          <button onClick={handleLogout} disabled={loadingLogout} className="bg-red-600 px-4 py-2 rounded flex items-center gap-2">
             {loadingLogout ? <Spinner /> : "Logout"}
           </button>
         </div>
@@ -230,9 +203,7 @@ export default function AdminDashboard() {
                     </div>
                     {m.name}
                   </td>
-                  <td className="py-2 px-4 text-green-400 font-bold">
-                    {m.total}
-                  </td>
+                  <td className="py-2 px-4 text-green-400 font-bold">{m.total}</td>
                 </tr>
               ))}
             </tbody>
