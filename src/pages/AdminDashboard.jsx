@@ -18,6 +18,10 @@ export default function AdminDashboard() {
   const [confirmAmount, setConfirmAmount] = useState("");
   const [date, setDate] = useState("");
 
+  // Date Range
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
   // UI
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -43,7 +47,7 @@ export default function AdminDashboard() {
       : parts[0]?.[0]?.toUpperCase() || "";
   };
 
-  // Calculate member total contributions
+  // Member totals
   const membersWithTotals = useMemo(
     () =>
       members.map((m) => {
@@ -59,6 +63,19 @@ export default function AdminDashboard() {
     () => membersWithTotals.reduce((sum, m) => sum + m.total, 0),
     [membersWithTotals]
   );
+
+  // Date range total
+  const rangeTotal = useMemo(() => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    return records
+      .filter((r) => {
+        const rDate = new Date(r.date);
+        return rDate >= start && rDate <= end;
+      })
+      .reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  }, [startDate, endDate, records]);
 
   // Logout
   const handleLogout = () => {
@@ -137,6 +154,32 @@ export default function AdminDashboard() {
 
         {message && <p className="text-center text-green-400 mb-4">{message}</p>}
         {error && <p className="text-center text-red-400 mb-4">{error}</p>}
+
+        {/* Date Range Selector */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-gray-900 p-4 rounded-lg shadow-lg">
+          <div className="flex flex-col">
+            <label className="mb-1 text-sm">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="p-2 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label className="mb-1 text-sm">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="p-2 rounded bg-gray-800 text-white"
+            />
+          </div>
+          <div className="flex flex-col justify-center text-center">
+            <label className="mb-1 text-sm">Total in Range (Ksh)</label>
+            <p className="text-2xl text-green-400 font-bold">{rangeTotal}</p>
+          </div>
+        </div>
 
         {/* Stats */}
         <div className="flex flex-col sm:flex-row justify-around mb-6 gap-4">
