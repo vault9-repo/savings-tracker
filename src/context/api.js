@@ -1,16 +1,15 @@
 import axios from "axios";
 
+// Automatically switch between local and deployed backend
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true,
+  baseURL: BASE_URL,
 });
 
 api.interceptors.request.use((config) => {
-  const user = localStorage.getItem("user");
-  if (user) {
-    const token = JSON.parse(user).token;
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
+  const token = localStorage.getItem("token");
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 

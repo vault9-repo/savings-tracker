@@ -1,21 +1,28 @@
-// src/context/SavingsContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
-import api from "../services/api";
+import api from "../services/api"; // use the updated api.js
 
 const SavingsContext = createContext();
 
-export function SavingsProvider({ children }) {
+export const SavingsProvider = ({ children }) => {
   const [records, setRecords] = useState([]);
   const [members, setMembers] = useState([]);
 
   const fetchRecords = async () => {
-    const { data } = await api.get("/savings");
-    setRecords(data);
+    try {
+      const res = await api.get("/savings");
+      setRecords(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const fetchMembers = async () => {
-    const { data } = await api.get("/users");
-    setMembers(data);
+    try {
+      const res = await api.get("/users");
+      setMembers(res.data);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   useEffect(() => {
@@ -28,6 +35,6 @@ export function SavingsProvider({ children }) {
       {children}
     </SavingsContext.Provider>
   );
-}
+};
 
 export const useSavings = () => useContext(SavingsContext);
