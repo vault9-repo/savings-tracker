@@ -1,24 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSavings } from "../context/SavingsContext";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 export default function AdminDashboard() {
-  const {
-    members,
-    records,
-    fetchMembers,
-    fetchRecords,
-  } = useSavings();
-
+  const { members, records, fetchMembers, fetchRecords } = useSavings();
   const navigate = useNavigate();
 
-  // Add Member
+  /* ================= STATE ================= */
+
+  // Add member
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Record Savings
+  // Savings
   const [memberId, setMemberId] = useState("");
   const [amount, setAmount] = useState("");
   const [confirmAmount, setConfirmAmount] = useState("");
@@ -31,43 +27,56 @@ export default function AdminDashboard() {
   // UI
   const [message, setMessage] = useState("");
 
-  // Loading states
+  // Loading
   const [loadingAddMember, setLoadingAddMember] = useState(false);
   const [loadingSavings, setLoadingSavings] = useState(false);
   const [loadingLogout, setLoadingLogout] = useState(false);
+
+  /* ================= EFFECTS ================= */
 
   useEffect(() => {
     fetchMembers();
     fetchRecords();
   }, []);
 
-  // Spinner
+  /* ================= HELPERS ================= */
+
   const Spinner = () => (
-    <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+    <span className="animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4" />
   );
 
-  // Totals
-  const grandTotalSavings = records.reduce(
-    (sum, r) => sum + Number(r.amount),
-    0
-  );
+  const getSecondNameInitial = (fullName = "") => {
+    const parts = fullName.trim().split(" ");
+    return parts.length > 1
+      ? parts[1][0].toUpperCase()
+      : parts[0]?.[0]?.toUpperCase() || "";
+  };
 
-  const membersWithTotals = members.map((m) => {
-    const total = records
-      .filter((r) => r.member === m._id)
-      .reduce((sum, r) => sum + Number(r.amount), 0);
-    return { ...m, total };
-  });
+  /* ================= TOTALS ================= */
 
-  const rangeTotal = records
-    .filter((r) => {
-      if (!startDate || !endDate) return false;
-      return r.date >= startDate && r.date <= endDate;
-    })
-    .reduce((sum, r) => sum + Number(r.amount), 0);
+  const grandTotalSavings = useMemo(() => {
+    return records.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  }, [records]);
 
-  // Handlers
-  const handleLogout = async () => {
+  const membersWithTotals = useMemo(() => {
+    return members.map((m) => {
+      const total = records
+        .filter((r) => r.member === m._id)
+        .reduce((sum, r) => sum + Number(r.amount || 0), 0);
+      return { ...m, total };
+    });
+  }, [members, records]);
+
+  const rangeTotal = useMemo(() => {
+    if (!startDate || !endDate) return 0;
+    return records
+      .filter((r) => r.date >= startDate && r.date <= endDate)
+      .reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  }, [records, startDate, endDate]);
+
+  /* ================= HANDLERS ================= */
+
+  const handleLogout = () => {
     setLoadingLogout(true);
     localStorage.removeItem("token");
     navigate("/");
@@ -77,15 +86,16 @@ export default function AdminDashboard() {
   const handleAddMember = async (e) => {
     e.preventDefault();
     setLoadingAddMember(true);
+    setMessage("");
 
     try {
       await api.post("/users", { name, email, password });
+      await fetchMembers();
       setName("");
       setEmail("");
       setPassword("");
       setMessage("Member added successfully");
-      fetchMembers();
-    } catch (err) {
+    } catch {
       alert("Failed to add member");
     } finally {
       setLoadingAddMember(false);
@@ -101,41 +111,44 @@ export default function AdminDashboard() {
     }
 
     setLoadingSavings(true);
+    setMessage("");
 
     try {
       await api.post("/savings", {
-        memberId,
-        amount,
+        member: memberId,
+        amount: Number(amount),
         date,
       });
 
+      await fetchRecords();
       setMemberId("");
       setAmount("");
       setConfirmAmount("");
       setDate("");
       setMessage("Savings recorded successfully");
-      fetchRecords();
-    } catch (err) {
+    } catch {
       alert("Failed to record savings");
     } finally {
       setLoadingSavings(false);
     }
   };
 
+  /* ================= JSX ================= */
+
   return (
     <div className="min-h-screen bg-bg text-white p-4 sm:p-6">
-      <div className="w-full max-w-6xl mx-auto">
+      <div className="max-w-6xl mx-auto">
 
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-center sm:text-left">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold">
             Prayer Centre 2026 Savings
           </h1>
 
           <button
             onClick={handleLogout}
             disabled={loadingLogout}
-            className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded font-semibold transition w-full sm:w-auto flex justify-center items-center gap-2 disabled:opacity-60"
+            className="bg-red-600 px-4 py-2 rounded flex items-center gap-2 disabled:opacity-60"
           >
             {loadingLogout ? <Spinner /> : "Logout"}
           </button>
@@ -146,29 +159,21 @@ export default function AdminDashboard() {
         )}
 
         {/* Date Range */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 bg-gray-900 p-4 rounded-lg shadow-lg">
-          <div className="flex flex-col">
-            <label className="mb-1 text-sm">Start Date</label>
-            <input
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="p-2 rounded bg-gray-800 text-white"
-            />
-          </div>
-
-          <div className="flex flex-col">
-            <label className="mb-1 text-sm">End Date</label>
-            <input
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="p-2 rounded bg-gray-800 text-white"
-            />
-          </div>
-
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-gray-900 p-4 rounded-lg mb-6">
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="p-2 rounded bg-gray-800"
+          />
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="p-2 rounded bg-gray-800"
+          />
           <div className="text-center">
-            <label className="text-sm">Total in Range (Ksh)</label>
+            <p className="text-sm">Total in Range</p>
             <p className="text-2xl text-green-400 font-bold">
               {rangeTotal}
             </p>
@@ -177,18 +182,16 @@ export default function AdminDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-          <div className="bg-gray-900 p-4 rounded-lg text-center">
-            <h2>Total Members</h2>
+          <div className="bg-gray-900 p-4 rounded text-center">
+            <p>Total Members</p>
             <p className="text-2xl">{members.length}</p>
           </div>
-
-          <div className="bg-gray-900 p-4 rounded-lg text-center">
-            <h2>Total Records</h2>
+          <div className="bg-gray-900 p-4 rounded text-center">
+            <p>Total Records</p>
             <p className="text-2xl">{records.length}</p>
           </div>
-
-          <div className="bg-gray-900 p-4 rounded-lg text-center">
-            <h2>Grand Total (Ksh)</h2>
+          <div className="bg-gray-900 p-4 rounded text-center">
+            <p>Grand Total</p>
             <p className="text-2xl text-green-400">
               {grandTotalSavings}
             </p>
@@ -198,34 +201,11 @@ export default function AdminDashboard() {
         {/* Add Member */}
         <div className="bg-gray-900 p-6 rounded-lg mb-6">
           <h2 className="text-xl mb-4">Add Member</h2>
-
           <form onSubmit={handleAddMember} className="flex flex-col gap-3">
-            <input
-              className="p-2 rounded bg-gray-800"
-              placeholder="Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 rounded bg-gray-800"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              className="p-2 rounded bg-gray-800"
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-            <button
-              disabled={loadingAddMember}
-              className="bg-primary p-2 rounded flex justify-center items-center gap-2 disabled:opacity-60"
-            >
+            <input className="p-2 bg-gray-800 rounded" placeholder="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <button disabled={loadingAddMember} className="bg-primary p-2 rounded flex justify-center gap-2">
               {loadingAddMember ? <Spinner /> : "Add Member"}
             </button>
           </form>
@@ -234,78 +214,49 @@ export default function AdminDashboard() {
         {/* Members List */}
         <div className="bg-gray-900 p-6 rounded-lg mb-6">
           <h2 className="text-xl mb-4">Members List</h2>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-gray-800 rounded-lg">
-              <thead>
-                <tr className="bg-gray-700">
-                  <th className="py-2 px-4 text-left">Name</th>
-                  <th className="py-2 px-4 text-left">Total (Ksh)</th>
+          <table className="w-full bg-gray-800 rounded-lg">
+            <thead>
+              <tr className="bg-gray-700">
+                <th className="text-left py-2 px-4">Name</th>
+                <th className="text-left py-2 px-4">Total (Ksh)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {membersWithTotals.map((m) => (
+                <tr key={m._id} className="border-b border-gray-700">
+                  <td className="py-2 px-4">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">
+                        {getSecondNameInitial(m.name)}
+                      </div>
+                      <span>{m.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-2 px-4 text-green-400">
+                    {m.total}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {membersWithTotals.map((m) => (
-                  <tr key={m._id} className="border-b border-gray-700">
-                    <td className="py-2 px-4">{m.name}</td>
-                    <td className="py-2 px-4 text-green-400">
-                      {m.total}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Record Savings */}
         <div className="bg-gray-900 p-6 rounded-lg">
           <h2 className="text-xl mb-4">Record Daily Savings</h2>
-
           <form onSubmit={handleAddSavings} className="flex flex-col gap-3">
-            <select
-              className="p-2 rounded bg-gray-800"
-              value={memberId}
-              onChange={(e) => setMemberId(e.target.value)}
-              required
-            >
+            <select className="p-2 bg-gray-800 rounded" value={memberId} onChange={(e) => setMemberId(e.target.value)} required>
               <option value="">Select Member</option>
               {members.map((m) => (
-                <option key={m._id} value={m._id}>
-                  {m.name}
-                </option>
+                <option key={m._id} value={m._id}>{m.name}</option>
               ))}
             </select>
 
-            <input
-              className="p-2 rounded bg-gray-800"
-              type="number"
-              placeholder="Amount Saved"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
+            <input className="p-2 bg-gray-800 rounded" type="number" placeholder="Amount" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" type="number" placeholder="Confirm Amount" value={confirmAmount} onChange={(e) => setConfirmAmount(e.target.value)} required />
+            <input className="p-2 bg-gray-800 rounded" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
 
-            <input
-              className="p-2 rounded bg-gray-800"
-              type="number"
-              placeholder="Confirm Amount"
-              value={confirmAmount}
-              onChange={(e) => setConfirmAmount(e.target.value)}
-              required
-            />
-
-            <input
-              className="p-2 rounded bg-gray-800"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-
-            <button
-              disabled={loadingSavings}
-              className="bg-accent p-2 rounded flex justify-center items-center gap-2 disabled:opacity-60"
-            >
+            <button disabled={loadingSavings} className="bg-accent p-2 rounded flex justify-center gap-2">
               {loadingSavings ? <Spinner /> : "Add Savings"}
             </button>
           </form>
