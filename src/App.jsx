@@ -1,18 +1,34 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
-import MemberDashboard from "./pages/MemberDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
+import MemberDashboard from "./pages/MemberDashboard";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
-function App() {
+export default function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/member-dashboard" element={<MemberDashboard />} />
-      <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      <Route path="/" element={<Login />} />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/member"
+        element={
+          <ProtectedRoute role="member">
+            <MemberDashboard />
+          </ProtectedRoute>
+        }
+      />
+
       {/* Redirect unknown paths to login */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Login />} />
     </Routes>
   );
 }
-
-export default App;
