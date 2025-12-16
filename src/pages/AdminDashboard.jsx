@@ -140,33 +140,33 @@ export default function AdminDashboard() {
 
         {/* Stats */}
         <div className="flex flex-col sm:flex-row justify-around mb-6 gap-4">
-          <div className="bg-amber-900 p-4 rounded-lg shadow-lg text-center flex-1">
+          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center flex-1">
             <h2 className="text-xl font-semibold">Total Members</h2>
             <p className="text-2xl">{members.length}</p>
           </div>
-          <div className="bg-amber-900 p-4 rounded-lg shadow-lg text-center flex-1">
+          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center flex-1">
             <h2 className="text-xl font-semibold">Total Records</h2>
             <p className="text-2xl">{records.length}</p>
           </div>
-          <div className="bg-amber-900 p-4 rounded-lg shadow-lg text-center flex-1">
+          <div className="bg-gray-900 p-4 rounded-lg shadow-lg text-center flex-1">
             <h2 className="text-xl font-semibold">Grand Total Savings (Ksh)</h2>
             <p className="text-2xl text-green-400">{grandTotalSavings}</p>
           </div>
         </div>
 
         {/* Add Member */}
-        <div className="bg-amber-900 p-6 rounded-lg shadow-lg mb-6">
+        <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-xl font-semibold mb-4">Add Member</h2>
           <form className="flex flex-col gap-3" onSubmit={handleAddMember}>
             <input
-              className="p-2 rounded bg-gray-600 text-white"
+              className="p-2 rounded bg-white text-black placeholder-gray-500"
               placeholder="Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
             />
             <input
-              className="p-2 rounded bg-gray-600 text-white"
+              className="p-2 rounded bg-white text-black placeholder-gray-500"
               type="email"
               placeholder="Email"
               value={email}
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
               required
             />
             <input
-              className="p-2 rounded bg-gray-600 text-white"
+              className="p-2 rounded bg-white text-black placeholder-gray-500"
               type="password"
               placeholder="Password"
               value={password}
@@ -183,7 +183,7 @@ export default function AdminDashboard() {
             />
             <button
               disabled={loadingAddMember}
-              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded transition flex justify-center gap-2"
+              className="bg-white text-black hover:bg-green-500 hover:text-white p-2 rounded transition flex justify-center gap-2"
             >
               {loadingAddMember ? <Spinner /> : "Add Member"}
             </button>
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Members List */}
-        <div className="bg-amber-900 p-6 rounded-lg shadow-lg mb-6 overflow-x-auto">
+        <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6 overflow-x-auto">
           <h2 className="text-xl font-semibold mb-4">Members List</h2>
           <table className="min-w-full bg-gray-800 text-white rounded-lg overflow-hidden">
             <thead>
@@ -217,11 +217,11 @@ export default function AdminDashboard() {
         </div>
 
         {/* Record Savings */}
-        <div className="bg-amber-900 p-6 rounded-lg shadow-lg mb-6">
+        <div className="bg-gray-900 p-6 rounded-lg shadow-lg mb-6">
           <h2 className="text-xl font-semibold mb-4">Record Daily Savings</h2>
           <form className="flex flex-col gap-3" onSubmit={handleAddSavings}>
             <select
-              className="p-2 rounded bg-gray-600 text-white"
+              className="p-2 rounded bg-white text-black"
               value={memberId}
               onChange={(e) => setMemberId(e.target.value)}
               required
@@ -234,7 +234,7 @@ export default function AdminDashboard() {
               ))}
             </select>
             <input
-              className="p-2 rounded bg-gray-600 text-white"
+              className="p-2 rounded bg-white text-black placeholder-gray-500"
               type="number"
               placeholder="Amount Saved"
               value={amount}
@@ -242,7 +242,7 @@ export default function AdminDashboard() {
               required
             />
             <input
-              className="p-2 rounded bg-gray-600 text-white"
+              className="p-2 rounded bg-white text-black placeholder-gray-500"
               type="number"
               placeholder="Confirm Amount"
               value={confirmAmount}
@@ -250,7 +250,7 @@ export default function AdminDashboard() {
               required
             />
             <input
-              className="p-2 rounded bg-gray-600 text-white"
+              className="p-2 rounded bg-white text-black"
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -258,7 +258,7 @@ export default function AdminDashboard() {
             />
             <button
               disabled={loadingSavings}
-              className="bg-gray-600 hover:bg-gray-700 text-white p-2 rounded transition flex justify-center gap-2"
+              className="bg-white text-black hover:bg-green-500 hover:text-white p-2 rounded transition flex justify-center gap-2"
             >
               {loadingSavings ? <Spinner /> : "Add Savings"}
             </button>
