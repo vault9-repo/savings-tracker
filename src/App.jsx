@@ -1,14 +1,31 @@
 import { Routes, Route } from "react-router-dom";
-import LandingPage from "./pages/LandingPage";
+import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
 import MemberDashboard from "./pages/MemberDashboard";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
-function App() {
+export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/member-dashboard" element={<MemberDashboard />} />
+      <Route path="/" element={<Login />} />
+
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/member"
+        element={
+          <ProtectedRoute role="member">
+            <MemberDashboard />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }
-
-export default App;
