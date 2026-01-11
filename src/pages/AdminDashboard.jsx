@@ -180,7 +180,7 @@ export default function AdminDashboard() {
               className="p-2 rounded bg-gray-800 text-white" />
           </div>
           <div className="flex flex-col justify-center text-center">
-            <label className="mb-1 text-sm">Total in Range (Ksh)</label>
+            <label className="mb-1 text-sm">Weekly Totals (Ksh)</label>
             <p className="text-2xl text-green-400 font-bold">{rangeTotal}</p>
           </div>
         </div>
